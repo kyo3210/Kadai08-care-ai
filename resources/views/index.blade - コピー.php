@@ -33,7 +33,7 @@
             <p style="font-size: 0.8em; color: #adb5bd; margin: 0;">CareSupport メニュー</p>
         </div>
         <a class="menu-item active" onclick="showTab('dashboard')">🏠 ダッシュボード</a>
-        <a class="menu-item" onclick="showTab('schedule')">📅 スケジュール管理</a> {{-- 追加 --}}
+        <a class="menu-item" onclick="showTab('schedule')">📅 スケジュール管理</a>
         <a class="menu-item" onclick="showTab('chat')">💬 AIチャット相談</a>
         <a class="menu-item" onclick="showTab('vital')">📊 バイタル分析</a>
         <a class="menu-item" onclick="showTab('record')">📝 ケア記録入力</a>
@@ -56,10 +56,9 @@
     </header>
 
     <main>
-        {{-- 1. ダッシュボード (重複を解消) --}}
+        {{-- 1. ダッシュボード (重複ID対策として、個別のincludeではなくdashboard専用の構造を維持) --}}
         <div id="tab-dashboard" class="content-section active">
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 15px;">
-                {{-- 本日の予定カード (script.jsのupdateDashboardScheduleで中身が書き換わります) --}}
                 <section style="border-top: 4px solid #ffc107;">
                     <h3 style="font-size: 1em; margin-top: 0;">📅 本日のスケジュール</h3>
                     <div id="dashboard-schedule-list">
@@ -74,37 +73,13 @@
                     <button onclick="showTab('vital')" style="width: 100%; background: #f8f9fa; border: 1px solid #ddd; padding: 5px; cursor: pointer; font-size: 0.8em; margin-top: 10px;">詳細グラフへ</button>
                 </section>
 
-                {{-- ★今回追加：認定更新対象者リストカード --}}
-                <section id="expiry-alert-section" style="border-top: 4px solid #d9534f; display: none;">
-                    <h3 style="font-size: 1em; margin-top: 0; color: #d9534f;">📅 認定更新対象者</h3>
-                    <div style="max-height: 200px; overflow-y: auto;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 0.85em; background: #fff;">
-                            <thead>
-                                <tr style="background: #fdf7f7; position: sticky; top: 0; z-index: 10;">
-                                    <th style="border-bottom: 2px solid #ddd; padding: 5px; text-align: left;">氏名</th>
-                                    <th style="border-bottom: 2px solid #ddd; padding: 5px; text-align: center;">期限</th>
-                                    <th style="border-bottom: 2px solid #ddd; padding: 5px; text-align: center;">状態</th>
-                                </tr>
-                            </thead>
-                            <tbody id="expiry-list-body">
-                                {{-- management.js の renderExpiryAlertList で中身が書き換わります --}}
-                            </tbody>
-                        </table>
-                    </div>
-                    <button onclick="showTab('client')" style="width: 100%; background: #f8f9fa; border: 1px solid #ddd; padding: 5px; cursor: pointer; font-size: 0.8em; margin-top: 10px;">利用者情報の編集へ</button>
-                </section>
-
                 @include('parts.chat')
                 @include('parts.vital')
             </div>
         </div>
 
-        {{-- 2. カレンダーセクション (追加) --}}
-        <div id="tab-schedule" class="content-section">
-            @include('parts.schedule')
-        </div>
-
-        {{-- 3. 個別機能セクション --}}
+        {{-- 各タブセクション --}}
+        <div id="tab-schedule" class="content-section">@include('parts.schedule')</div>
         <div id="tab-chat" class="content-section">@include('parts.chat')</div>
         <div id="tab-vital" class="content-section">@include('parts.vital')</div>
         <div id="tab-record" class="content-section">@include('parts.record')</div>
@@ -112,27 +87,61 @@
         <div id="tab-office" class="content-section">@include('parts.office')</div>
     </main>
 
-@include('parts.modals')
+    @include('parts.modals')
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <script>
-        window.toggleSidebar = function() { $('#sidebar, #sidebar-overlay').toggleClass('active'); };
-        window.showTab = function(tabName) {
-            $('.content-section').removeClass('active'); $('#tab-' + tabName).addClass('active');
-            const titles = { 'dashboard': 'ダッシュボード', 'schedule': 'スケジュール管理', 'chat': 'AIチャット相談', 'vital': 'バイタル分析', 'record': 'ケア記録入力', 'client': '利用者管理', 'office': '事業者情報' };
+        // --- 基本UI操作ロジック ---
+
+        function toggleSidebar() {
+            $('#sidebar, #sidebar-overlay').toggleClass('active');
+        }
+
+        function showTab(tabName) {
+            $('.content-section').removeClass('active');
+            $('#tab-' + tabName).addClass('active');
+            
+            const titles = {
+                'dashboard': 'ダッシュボード', 'schedule': 'スケジュール管理',
+                'chat': 'AIチャット相談', 'vital': 'バイタル分析',
+                'record': 'ケア記録入力', 'client': '利用者管理', 'office': '事業者情報'
+            };
             $('#page-title').text(titles[tabName] || 'CareSupport AI');
-            if($('#sidebar').hasClass('active')) window.toggleSidebar();
+
+            if($('#sidebar').hasClass('active')) toggleSidebar();
             window.scrollTo(0, 0);
-        };
-        $(document).on('click', '#menu-toggle, #sidebar-overlay', function(e) { e.preventDefault(); window.toggleSidebar(); });
+
+            if (tabName === 'schedule' && typeof calendar !== 'undefined') {
+                setTimeout(() => { calendar.updateSize(); }, 100);
+            }
+        }
+
+        function saveStartPageSetting(value) {
+            localStorage.setItem('care_support_start_page', value);
+        }
+
+        $(document).ready(function() {
+            // ハンバーガーメニュークリックイベント
+            $(document).on('click', '#menu-toggle, #sidebar-overlay', function(e) {
+                e.preventDefault();
+                toggleSidebar();
+            });
+
+            // 初期タブ表示
+            const savedPage = localStorage.getItem('care_support_start_page') || $('#start-page-setting').val();
+            if (savedPage) {
+                $('#start-page-setting').val(savedPage);
+                showTab(savedPage);
+            }
+        });
     </script>
 
     <script src="{{ asset('js/ai-chat.js') }}"></script>
     <script src="{{ asset('js/vital-analysis.js') }}"></script>
     <script src="{{ asset('js/schedule-record.js') }}"></script>
-    <script src="{{ asset('js/management.js') }}"></script>
+    <script src="{{ asset('js/management.js') }}"></script>    
 </body>
 </html>

@@ -11,26 +11,20 @@ class ClientController extends Controller
 {
     /**
      * 利用者一覧の取得
-     * 500エラーを回避するため、詳細な例外処理を組み込んでいます。
      */
     public function index()
     {
         try {
-            // 現在のログインユーザーを取得
             $user = Auth::user();
-
             if (!$user) {
                 return response()->json(['error' => '認証されていません。再ログインしてください。'], 401);
             }
 
             // 全利用者を最新順に取得
-            // ※ 特定の事業所のみに絞り込む場合は ->where('office_id', $user->office_id) を追加
             $clients = Client::orderBy('created_at', 'desc')->get();
-
             return response()->json($clients);
 
         } catch (\Exception $e) {
-            // エラーが発生した場合、laravel.logに詳細を書き出し、500エラーを返します
             Log::error('ClientController@index Error: ' . $e->getMessage());
             return response()->json([
                 'error' => 'サーバーエラーが発生しました。',
@@ -40,41 +34,54 @@ class ClientController extends Controller
     }
 
     /**
-     * 利用者の新規登録
-     * 追加された詳細項目（被保険者番号、認定期間など）の保存に対応
+     * 利用者の登録・上書き更新（統合版）
      */
     public function store(Request $request)
     {
         try {
-            // 入力値のバリデーション（チェック）
-            // マイグレーションで追加した新しいカラム名と一致させています
+            // 💡 ポイント1: ID重複チェック(unique)を外す
+            // 更新時にもこのバリデーションを通るため、unique制約があると上書きができません。
             $validated = $request->validate([
-                'id'               => 'required|string|unique:clients,id',
+                'id'               => 'required|string', 
                 'client_name'      => 'required|string|max:255',
                 'postcode'         => 'nullable|string|max:7',
                 'address'          => 'required|string|max:255',
                 'contact_tel'      => 'required|string|max:20',
-                'insurace_number'  => 'nullable|string|max:255', // 被保険者番号
-                'care_start_date'  => 'nullable|date',           // 認定開始日
-                'care_end_date'    => 'nullable|date',           // 認定終了日
+                'insurace_number'  => 'nullable|string|max:255', 
+                'care_start_date'  => 'nullable|date',           
+                'care_end_date'    => 'nullable|date',           
                 'care_manager'     => 'required|string|max:255',
-                'care_manager_tel' => 'nullable|string|max:20',  // ケアマネ連絡先
+                'care_manager_tel' => 'nullable|string|max:20',  
             ]);
 
-            // ログインユーザーの事業所IDを自動セット
-            $validated['office_id'] = Auth::user()->office_id;
+            // ログインユーザーの事業所IDをセット
+            $officeId = Auth::user()->office_id;
 
-            // データベースへ保存
-            $client = Client::create($validated);
+            // 💡 ポイント2: updateOrCreate の使用
+            // 'id' をキーにして検索し、存在すれば第2引数の内容で更新、なければ新規作成します。
+            $client = Client::updateOrCreate(
+                ['id' => $request->id],
+                [
+                    'client_name'      => $request->client_name,
+                    'postcode'         => $request->postcode,
+                    'address'          => $request->address,
+                    'contact_tel'      => $request->contact_tel,
+                    'insurace_number'  => $request->insurace_number,
+                    'care_manager'     => $request->care_manager,
+                    'care_start_date'  => $request->care_start_date,
+                    'care_end_date'    => $request->care_end_date,
+                    'care_manager_tel' => $request->care_manager_tel,
+                    'office_id'        => $officeId,
+                ]
+            );
 
             return response()->json([
                 'status' => 'success',
-                'message' => '利用者を登録しました。',
+                'message' => '利用者情報を保存しました。',
                 'data' => $client
             ]);
 
         } catch (\Illuminate\Validation\ValidationException $v) {
-            // バリデーションエラー（ID重複など）
             return response()->json([
                 'status' => 'error',
                 'message' => '入力内容に不備があります。',
@@ -82,11 +89,10 @@ class ClientController extends Controller
             ], 422);
 
         } catch (\Exception $e) {
-            // その他の予期せぬエラー
             Log::error('ClientController@store Error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => '登録中にエラーが発生しました。',
+                'message' => '保存中にエラーが発生しました。',
                 'details' => $e->getMessage()
             ], 500);
         }
