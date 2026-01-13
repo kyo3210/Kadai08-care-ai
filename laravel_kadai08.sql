@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- ホスト: mysql
--- 生成日時: 2026 年 1 月 04 日 06:27
+-- 生成日時: 2026 年 1 月 12 日 14:11
 -- サーバのバージョン： 8.4.7
 -- PHP のバージョン: 8.3.26
 
@@ -33,6 +33,16 @@ CREATE TABLE `cache` (
   `expiration` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- テーブルのデータのダンプ `cache`
+--
+
+INSERT INTO `cache` (`key`, `value`, `expiration`) VALUES
+('laravel-cache-hanako@test|172.18.0.1', 'i:1;', 1768216717),
+('laravel-cache-hanako@test|172.18.0.1:timer', 'i:1768216717;', 1768216717),
+('laravel-cache-kyoko@test|172.18.0.1', 'i:1;', 1768216727),
+('laravel-cache-kyoko@test|172.18.0.1:timer', 'i:1768216727;', 1768216727);
+
 -- --------------------------------------------------------
 
 --
@@ -54,6 +64,7 @@ CREATE TABLE `cache_locks` (
 CREATE TABLE `care_records` (
   `id` bigint UNSIGNED NOT NULL,
   `client_id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `schedule_id` bigint UNSIGNED DEFAULT NULL,
   `content` text COLLATE utf8mb4_unicode_ci NOT NULL,
   `body_temp` decimal(4,1) DEFAULT NULL,
   `blood_pressure_high` int DEFAULT NULL,
@@ -69,18 +80,23 @@ CREATE TABLE `care_records` (
 -- テーブルのデータのダンプ `care_records`
 --
 
-INSERT INTO `care_records` (`id`, `client_id`, `content`, `body_temp`, `blood_pressure_high`, `blood_pressure_low`, `water_intake`, `recorded_by`, `recorded_at`, `created_at`, `updated_at`) VALUES
-(1, 'A001', 'うどんを買った', 36.8, 123, 78, 200, 'kyo', '2025-12-01 10:42:00', '2025-12-29 22:42:46', '2026-01-01 16:13:19'),
-(2, 'A001', 'うどんを完食しました', 36.7, 123, 87, 120, 'kyo', '2025-12-28 11:35:00', '2025-12-29 23:36:23', '2025-12-29 23:36:23'),
-(3, 'A001', '咳と発熱と風邪症状あり要観察', 37.8, 145, 90, 300, 'kyo', '2025-12-29 11:46:00', '2025-12-29 23:47:19', '2026-01-01 15:35:36'),
-(4, 'A001', '食事の少し前から元気がない様子だった。 今日の献立は好みのメニューではなく、ほとんど箸をつけられません。体調不良ではなく嗜好の問題のため、無理強いはせずに様子を見ることにしました。', 36.8, 123, 89, 123, 'kyo', '2025-12-16 12:00:00', '2026-01-01 14:18:43', '2026-01-01 14:18:43'),
-(5, 'A001', '普段から食事をよく噛まずに飲み込んでしまうことが多いようで、そのためむせ込んでしまうことがある。なるべく職員が近くにいるようにして、ゆっくり食べることと、口に詰め込み過ぎないように声かけを行う。今後も、むせ混むことが多いようであれば、食事形態の変更も必要と思われる。', 36.7, 145, 120, 100, 'kyo', '2025-12-17 10:00:00', '2026-01-01 14:20:32', '2026-01-01 14:20:32'),
-(6, 'A001', '検温すると平熱より高かったため、看護師に報告し本日の入浴は中止した。', 37.9, 123, 89, 200, 'kyo', '2025-12-19 11:00:00', '2026-01-01 14:21:38', '2026-01-01 14:21:38'),
-(7, 'A001', '便意をもよおして、トイレに行こうとされるも、場所がわからなくなってしまうので、職員が声かけ、誘導し排泄した。', 37.0, 110, 77, 120, 'kyo', '2025-12-19 11:00:00', '2026-01-01 14:23:09', '2026-01-01 14:23:09'),
-(8, 'A001', 'ポータブルトイレでなんとか自力で排泄することが出来た。ポータブルトイレの後始末は職員が行った。', 36.8, 123, 78, 120, 'kyo', '2025-12-21 11:00:00', '2026-01-01 14:24:43', '2026-01-01 14:24:43'),
-(9, 'A001', '昨晩より高熱がつつく、倦怠感が強く食事もとれていない状況。\n娘さんに相談してかかりつけ医の井上内科クリニックを受診。\nインフルエンザA型要請との診断となり足元がふらついている為2,3日の入院となった。', 38.9, 145, 110, 65, 'kyo', '2025-12-25 10:00:00', '2026-01-01 15:08:16', '2026-01-03 14:19:07'),
-(10, 'A001', '血圧が高めだったので入浴は停止してお風呂で清拭を行った。', 36.9, 145, 115, 230, 'kyo', '2025-12-17 12:00:00', '2026-01-03 14:20:20', '2026-01-03 14:20:20'),
-(11, 'A001', '今日は体調もよく食事を完食されました', 36.9, 134, 111, 120, 'kyo', '2025-12-20 11:00:00', '2026-01-03 16:05:34', '2026-01-03 16:05:34');
+INSERT INTO `care_records` (`id`, `client_id`, `schedule_id`, `content`, `body_temp`, `blood_pressure_high`, `blood_pressure_low`, `water_intake`, `recorded_by`, `recorded_at`, `created_at`, `updated_at`) VALUES
+(1, 'A001', NULL, 'うどんを買った', 36.8, 123, 78, 200, 'kyo', '2025-12-01 10:42:00', '2025-12-29 22:42:46', '2026-01-01 16:13:19'),
+(2, 'A001', NULL, 'うどんを完食しました', 36.7, 123, 87, 120, 'kyo', '2025-12-28 11:35:00', '2025-12-29 23:36:23', '2025-12-29 23:36:23'),
+(3, 'A001', NULL, '咳と発熱と風邪症状あり要観察', 37.8, 145, 90, 300, 'kyo', '2025-12-29 11:46:00', '2025-12-29 23:47:19', '2026-01-01 15:35:36'),
+(4, 'A001', NULL, '食事の少し前から元気がない様子だった。 今日の献立は好みのメニューではなく、ほとんど箸をつけられません。体調不良ではなく嗜好の問題のため、無理強いはせずに様子を見ることにしました。', 36.8, 123, 89, 123, 'kyo', '2025-12-16 12:00:00', '2026-01-01 14:18:43', '2026-01-01 14:18:43'),
+(5, 'A001', NULL, '普段から食事をよく噛まずに飲み込んでしまうことが多いようで、そのためむせ込んでしまうことがある。なるべく職員が近くにいるようにして、ゆっくり食べることと、口に詰め込み過ぎないように声かけを行う。今後も、むせ混むことが多いようであれば、食事形態の変更も必要と思われる。', 36.7, 145, 120, 100, 'kyo', '2025-12-17 10:00:00', '2026-01-01 14:20:32', '2026-01-01 14:20:32'),
+(6, 'A001', NULL, '検温すると平熱より高かったため、看護師に報告し本日の入浴は中止した。', 37.9, 123, 89, 200, 'kyo', '2025-12-19 11:00:00', '2026-01-01 14:21:38', '2026-01-01 14:21:38'),
+(7, 'A001', NULL, '便意をもよおして、トイレに行こうとされるも、場所がわからなくなってしまうので、職員が声かけ、誘導し排泄した。', 37.0, 110, 77, 120, 'kyo', '2025-12-19 11:00:00', '2026-01-01 14:23:09', '2026-01-01 14:23:09'),
+(8, 'A001', NULL, 'ポータブルトイレでなんとか自力で排泄することが出来た。ポータブルトイレの後始末は職員が行った。', 36.8, 123, 78, 120, 'kyo', '2025-12-21 11:00:00', '2026-01-01 14:24:43', '2026-01-01 14:24:43'),
+(9, 'A001', NULL, '昨晩より高熱がつつく、倦怠感が強く食事もとれていない状況。\n娘さんに相談してかかりつけ医の井上内科クリニックを受診。\nインフルエンザA型要請との診断となり足元がふらついている為2,3日の入院となった。', 38.9, 145, 110, 65, 'kyo', '2025-12-25 10:00:00', '2026-01-01 15:08:16', '2026-01-03 14:19:07'),
+(10, 'A001', NULL, '血圧が高めだったので入浴は停止してお風呂で清拭を行った。', 36.9, 145, 115, 230, 'kyo', '2025-12-17 12:00:00', '2026-01-03 14:20:20', '2026-01-03 14:20:20'),
+(11, 'A001', NULL, '今日は体調もよく食事を完食されました', 36.9, 134, 111, 120, 'kyo', '2025-12-20 11:00:00', '2026-01-03 16:05:34', '2026-01-03 16:05:34'),
+(12, 'A002', NULL, '雪が降っているのを外から見たいとのことなので窓際まで介助をしながらしばらく眺めていました。', 36.9, 134, 99, 100, 'kyo', '2026-01-04 15:02:00', '2026-01-11 15:04:18', '2026-01-11 15:04:18'),
+(13, 'A001', NULL, 'テスト', 36.8, 144, 79, 120, 'kyo', '2026-01-11 17:21:00', '2026-01-11 17:21:59', '2026-01-11 17:21:59'),
+(14, 'A001', NULL, 'チェックテスト', 3.8, 144, 134, 300, 'kyo', '2026-01-12 11:23:00', '2026-01-11 17:23:31', '2026-01-11 17:23:31'),
+(15, 'A001', 3, '入浴介助、バイタル確認', 36.0, 155, 109, 111, 'kyo', '2026-01-11 17:00:00', '2026-01-11 17:36:31', '2026-01-11 17:36:31'),
+(16, 'A001', 4, '血圧が高めなので、ヒートショックにならなように入浴介助を行った', 36.8, 178, 89, 0, 'kyo', '2026-01-12 17:27:00', '2026-01-12 17:28:33', '2026-01-12 17:28:33');
 
 -- --------------------------------------------------------
 
@@ -110,8 +126,10 @@ CREATE TABLE `clients` (
 
 INSERT INTO `clients` (`id`, `office_id`, `client_name`, `postcode`, `address`, `contact_tel`, `insurace_number`, `care_start_date`, `care_end_date`, `care_manager`, `care_manager_tel`, `created_at`, `updated_at`) VALUES
 ('A0003', 1, '利用者　虎次郎', '8120002', '福岡県福岡市博多区空港前2-1', '090-7777-8888', '1234567890', '2025-10-01', '2026-09-30', '田中ケアマネ', '090-9999-2222', '2026-01-03 14:20:59', '2026-01-03 14:20:59'),
-('A001', 1, '田中　太郎', '8000001', '北九州市戸畑区中原新町2-1', '000-111-2222', '0123456788', '2025-01-01', '2026-10-31', '田中ケアマネジャー', '090-2222-3333', '2025-12-29 21:42:57', '2025-12-29 21:42:57'),
-('A002', 1, '介護　イサオ', '8000001', 'bhogqh', '000-222-2222', '1234567890', '2025-07-01', '2026-06-30', '田中ケアマネジャー', '090-333-4444', '2026-01-01 13:59:43', '2026-01-01 13:59:43');
+('A001', 1, '田中　太郎', '8000001', '北九州市戸畑区中原新町2-1', '000-111-2222', '0123456789', '2025-01-01', '2026-10-31', '田中ケアマネジャー', '090-2222-3333', '2025-12-29 21:42:57', '2026-01-12 22:23:04'),
+('A002', 1, '介護　イサオ', '8000001', 'bhogqh', '000-222-2222', '1234567890', '2025-07-01', '2026-06-30', '田中ケアマネジャー', '090-333-4444', '2026-01-01 13:59:43', '2026-01-01 13:59:43'),
+('A003', 1, '介護　次郎', '8040003', '福岡県北九州市戸畑区中原新町', '092-111-3333', '0987654321', '2025-10-01', '2026-09-30', '田中ケアマネジャー', '090-5555-3333', '2026-01-11 11:33:18', '2026-01-11 11:33:18'),
+('A010', 1, '介護　シロウ', '8020017', '福岡県北九州市小倉北区明和町', '090-2222-3333', '1234567890', '2025-10-01', '2025-12-31', '田中ケアマネジャー', '090-3333--3333', '2026-01-12 22:00:45', '2026-01-12 22:05:29');
 
 -- --------------------------------------------------------
 
@@ -190,7 +208,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 (25, '2025_12_29_143926_create_offices_table', 1),
 (26, '2025_12_29_144833_add_office_id_to_users_and_clients_table', 1),
 (27, '2025_12_29_202847_add_details_to_clients_table', 1),
-(28, '2025_12_29_222248_add_vitals_to_care_records_table', 2);
+(28, '2025_12_29_222248_add_vitals_to_care_records_table', 2),
+(29, '2026_01_11_140841_create_schedules_table', 3),
+(30, '2026_01_11_155345_add_schedule_id_to_records_table', 4);
 
 -- --------------------------------------------------------
 
@@ -213,7 +233,7 @@ CREATE TABLE `offices` (
 --
 
 INSERT INTO `offices` (`id`, `name`, `postcode`, `address`, `tel`, `created_at`, `updated_at`) VALUES
-(1, 'テスト介護事業所', '8020001', '福岡県北九州市小倉北区', '093-000-0000', '2025-12-29 21:24:57', '2025-12-29 21:24:57');
+(1, 'テスト介護事業所', '8040003', '福岡県北九州市小倉北区', '093-000-0000', '2025-12-29 21:24:57', '2026-01-11 11:30:41');
 
 -- --------------------------------------------------------
 
@@ -249,6 +269,34 @@ CREATE TABLE `personal_access_tokens` (
 -- --------------------------------------------------------
 
 --
+-- テーブルの構造 `schedules`
+--
+
+CREATE TABLE `schedules` (
+  `id` bigint UNSIGNED NOT NULL,
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `client_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `start` datetime NOT NULL,
+  `end` datetime NOT NULL,
+  `color` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- テーブルのデータのダンプ `schedules`
+--
+
+INSERT INTO `schedules` (`id`, `type`, `client_id`, `title`, `description`, `start`, `end`, `color`, `created_at`, `updated_at`) VALUES
+(1, 'care', 'A002', 'A002: 介護　イサオ様ケア', '訪問介護(清拭)', '2026-01-11 11:00:00', '2026-01-11 12:00:00', '#007bff', '2026-01-11 15:01:08', '2026-01-11 18:24:26'),
+(3, 'care', 'A001', 'A001: 田中　太郎様ケア', '入浴介助、バイタル確認', '2026-01-11 17:00:00', '2026-01-11 18:00:00', '#007bff', '2026-01-11 17:06:41', '2026-01-11 17:21:23'),
+(4, 'care', 'A001', '田中　太郎', '身体介助', '2026-01-12 17:27:00', '2026-01-12 18:27:00', '#28a745', '2026-01-12 17:27:39', '2026-01-12 17:27:39');
+
+-- --------------------------------------------------------
+
+--
 -- テーブルの構造 `sessions`
 --
 
@@ -266,7 +314,7 @@ CREATE TABLE `sessions` (
 --
 
 INSERT INTO `sessions` (`id`, `user_id`, `ip_address`, `user_agent`, `payload`, `last_activity`) VALUES
-('qOo3iFvbUuo0dvTyoGRMGD9uFGZa40rIdQMHCZEb', 1, '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoidUZUWDBxZ3lhbTRleVZRcU8xUlhhWUtXa0VFaFYyRm8xcEI2VXdjZyI7czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo5OiJfcHJldmlvdXMiO2E6Mjp7czozOiJ1cmwiO3M6MzY6Imh0dHA6Ly9sb2NhbGhvc3Qvd2ViLWFwaS9hbGwtcmVjb3JkcyI7czo1OiJyb3V0ZSI7Tjt9czozOiJ1cmwiO2E6MDp7fXM6NTA6ImxvZ2luX3dlYl81OWJhMzZhZGRjMmIyZjk0MDE1ODBmMDE0YzdmNThlYTRlMzA5ODlkIjtpOjE7fQ==', 1767429238);
+('Jq6nuKTaVG0y2LYbf0XtokAJu5s65n1suHoBVbUO', 1, '172.18.0.1', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36', 'YTo1OntzOjY6Il90b2tlbiI7czo0MDoiZWlPOG1ESFJpN3kzRENwTVZRemF1Nnl3ZmdpTmVNZG0wdjB3eUNnQyI7czozOiJ1cmwiO2E6MDp7fXM6OToiX3ByZXZpb3VzIjthOjI6e3M6MzoidXJsIjtzOjExMjoiaHR0cDovL2xvY2FsaG9zdC93ZWItYXBpL3NjaGVkdWxlcz9lbmQ9MjAyNi0wMi0wOFQwMCUzQTAwJTNBMDAlMkIwOSUzQTAwJnN0YXJ0PTIwMjUtMTItMjhUMDAlM0EwMCUzQTAwJTJCMDklM0EwMCI7czo1OiJyb3V0ZSI7Tjt9czo2OiJfZmxhc2giO2E6Mjp7czozOiJvbGQiO2E6MDp7fXM6MzoibmV3IjthOjA6e319czo1MDoibG9naW5fd2ViXzU5YmEzNmFkZGMyYjJmOTQwMTU4MGYwMTRjN2Y1OGVhNGUzMDk4OWQiO2k6MTt9', 1768226991);
 
 -- --------------------------------------------------------
 
@@ -291,8 +339,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`id`, `office_id`, `name`, `email`, `email_verified_at`, `password`, `remember_token`, `created_at`, `updated_at`) VALUES
-(1, 1, 'kyo', 'kyoukonomura@emsystems.co.jp', NULL, '$2y$12$OjCP5Hf675a5hCfnih/NLuQdDz8c9q7qdYDtXfVg1fiaHTb5wb/uy', 'UsQQ4lVM6ZaNFBna0SiQUEKGLahn0I3tdtcJ9CyEzpy9bd2mwMNXzBufTOKg', '2025-12-29 21:09:18', '2026-01-03 15:03:20'),
-(2, 1, '職員　ハナコ', 'hanako@co.jp', NULL, '$2y$12$og.mJ7jxtT0m2YNnuoP8J.2E8YlrcmVvJpuOz4I/2DGzTeUOzcZXW', NULL, '2026-01-02 16:23:35', '2026-01-02 16:23:35');
+(1, 1, 'kyo', 'kyoukonomura@emsystems.co.jp', NULL, '$2y$12$OjCP5Hf675a5hCfnih/NLuQdDz8c9q7qdYDtXfVg1fiaHTb5wb/uy', '5LOfCa1yqayqs1gnoSintXD5oVK1rsWHClAFR7NePYXAdNdejIulSij5gb4C', '2025-12-29 21:09:18', '2026-01-03 15:03:20'),
+(2, 1, '職員　ハナコ', 'hanako@co.jp', NULL, '$2y$12$og.mJ7jxtT0m2YNnuoP8J.2E8YlrcmVvJpuOz4I/2DGzTeUOzcZXW', NULL, '2026-01-02 16:23:35', '2026-01-02 16:23:35'),
+(11, 1, '職員　タロウ', 'taro@test', NULL, '$2y$12$VpMcJJOjZ47I00D3eEjuVuVuq11lAMMPOucaYucpYAPuK60MjDT/W', NULL, '2026-01-11 11:30:22', '2026-01-11 11:30:22');
 
 --
 -- ダンプしたテーブルのインデックス
@@ -315,7 +364,8 @@ ALTER TABLE `cache_locks`
 --
 ALTER TABLE `care_records`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `care_records_client_id_foreign` (`client_id`);
+  ADD KEY `care_records_client_id_foreign` (`client_id`),
+  ADD KEY `care_records_schedule_id_foreign` (`schedule_id`);
 
 --
 -- テーブルのインデックス `clients`
@@ -372,6 +422,13 @@ ALTER TABLE `personal_access_tokens`
   ADD KEY `personal_access_tokens_expires_at_index` (`expires_at`);
 
 --
+-- テーブルのインデックス `schedules`
+--
+ALTER TABLE `schedules`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `schedules_client_id_foreign` (`client_id`);
+
+--
 -- テーブルのインデックス `sessions`
 --
 ALTER TABLE `sessions`
@@ -395,7 +452,7 @@ ALTER TABLE `users`
 -- テーブルの AUTO_INCREMENT `care_records`
 --
 ALTER TABLE `care_records`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- テーブルの AUTO_INCREMENT `failed_jobs`
@@ -413,7 +470,7 @@ ALTER TABLE `jobs`
 -- テーブルの AUTO_INCREMENT `migrations`
 --
 ALTER TABLE `migrations`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=29;
+  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- テーブルの AUTO_INCREMENT `offices`
@@ -428,10 +485,16 @@ ALTER TABLE `personal_access_tokens`
   MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
+-- テーブルの AUTO_INCREMENT `schedules`
+--
+ALTER TABLE `schedules`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+
+--
 -- テーブルの AUTO_INCREMENT `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- ダンプしたテーブルの制約
@@ -441,13 +504,20 @@ ALTER TABLE `users`
 -- テーブルの制約 `care_records`
 --
 ALTER TABLE `care_records`
-  ADD CONSTRAINT `care_records_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `care_records_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `care_records_schedule_id_foreign` FOREIGN KEY (`schedule_id`) REFERENCES `schedules` (`id`) ON DELETE SET NULL;
 
 --
 -- テーブルの制約 `clients`
 --
 ALTER TABLE `clients`
   ADD CONSTRAINT `clients_office_id_foreign` FOREIGN KEY (`office_id`) REFERENCES `offices` (`id`) ON DELETE CASCADE;
+
+--
+-- テーブルの制約 `schedules`
+--
+ALTER TABLE `schedules`
+  ADD CONSTRAINT `schedules_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE;
 
 --
 -- テーブルの制約 `users`
